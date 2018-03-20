@@ -1,70 +1,53 @@
+// Dependencies
 var express = require("express");
 var bodyParser = require("body-parser");
-var mongoose = require("mongoose")
+var logger = require("morgan");
+var mongoose = require("mongoose");
+// Requiring our Note and Article models
+var Note = require("./models/Note.js");
+var Article = require("./models/Article.js");
+// Our scraping tools
+var request = require("request");
 var cheerio = require("cheerio");
-var request = require('request');
-var db = require("./models");
-var PORT = 3000;
+// Set mongoose to leverage built in JavaScript ES6 Promises
+mongoose.Promise = Promise;
+
+var PORT = process.env.PORT || 8080;
+
+// Initialize Express
 var app = express();
-app.use(bodyParser.urlencoded({ extended: true }));
+
+// Use morgan and body parser with our app
+app.use(logger("dev"));
+app.use(bodyParser.urlencoded({
+  extended: false
+}));
+
+// Serve static content
 app.use(express.static("public"));
+
+// Set Handlebars.
+var exphbs = require("express-handlebars");
+
+app.engine("handlebars", exphbs({ defaultLayout: "main" }));
+app.set("view engine", "handlebars");
+
+// Import routes and give the server access to them.
+var routes = require("./controllers/htmlcontrollers.js");
+
+app.use("/", routes);
+
+//mongoose.connect("mongodb://heroku_gnzk5747:4d2121nhgnfbdl1pfirsdepk9n@ds125262.mlab.com:25262/heroku_gnzk5747");
 mongoose.Promise = Promise;
 mongoose.connect("mongodb://localhost/newsScraper", {
     //useMongoClient: true
 });
-var exphbs = require("express-handlebars");
-app.engine("handlebars", exphbs({ defaultLayout: "main" }));
-app.set("view engine", "handlebars");
+//var db = mongoose.connection;
 
-request('http://ezinearticles.com/?cat=Arts-and-Entertainment', function(err, response, html) {
-    var $ = cheerio.load(html);
-    //console.log('response',response);
-    $('.article').each(function(i, element) {
-
-            var articleLinkName = $(this).children('a').text();
-            var articleSummery = $(this).find('.article-summary').text().trim().replace(/\\/g, " ");
-            
-            var data = {
-                articleName: articleLinkName,
-                articleSumm: articleSummery
-            }
-            console.log('data...........', data)
-            //if (articleLinkName && articleSummery) {
-
-                db.Article.create(data)
-                .then(function(dbArticle) {
-                    console.log('dbArticle', dbArticle);
-                })
-                .catch(function(err) {
-                        //response.json(err);
-                    console.log('err');
-                });
-        
-    })
-});
-
-app.get('/allArticles',function(req,res){
-  db.Article.find({}).then(function(dbArticle){
-    res.json(dbArticle);
-  }).catch(function(err){
-    console.log(err);
-  })
-});
+// Show any mongoose errors
 
 
-
-
-app.get('/', function(req, res) {
-    res.render("index");
-})
-
-app.put('/save',function(req,res){
-  console.log('hjkshadhddd',req.body)
-  //db.Article.update({req.body})
-})
-
-
-
+// Listen on port 3000
 app.listen(PORT, function() {
-    console.log("App running on port " + PORT + "!");
+  console.log("App running on PORT " + PORT);
 });
