@@ -22,11 +22,8 @@ request('http://ezinearticles.com/?cat=Arts-and-Entertainment', function(err, re
     $('.article').each(function(i, element) {
 
             var articleLinkName = $(this).children('a').text();
-            //$('.article-title-link').text()
-
             var articleSummery = $(this).find('.article-summary').text().trim().replace(/\\/g, " ");
-            //console.log('articleLink',articleLinkName);
-            //console.log('articleSummery',articleSummery)
+            
             var data = {
                 articleName: articleLinkName,
                 articleSumm: articleSummery
@@ -34,22 +31,37 @@ request('http://ezinearticles.com/?cat=Arts-and-Entertainment', function(err, re
             console.log('data...........', data)
             //if (articleLinkName && articleSummery) {
 
-                db.Article.create(data).then(function(dbArticle) {
+                db.Article.create(data)
+                .then(function(dbArticle) {
                     console.log('dbArticle', dbArticle);
-                }).catch(function(err) {
+                })
+                .catch(function(err) {
                         //response.json(err);
                     console.log('err');
                 });
-        //}
+        
     })
-})
+});
+
+app.get('/allArticles',function(req,res){
+  db.Article.find({}).then(function(dbArticle){
+    res.json(dbArticle);
+  }).catch(function(err){
+    console.log(err);
+  })
+});
+
+
 
 
 app.get('/', function(req, res) {
     res.render("index");
 })
 
-
+app.put('/save',function(req,res){
+  console.log('hjkshadhddd',req.body)
+  //db.Article.update({req.body})
+})
 
 
 

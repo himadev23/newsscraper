@@ -7,7 +7,8 @@ var ArticleSchema = new Schema({
   articleName: {
     type: String,
     required: true,
-    unique:true
+    unique:true,
+
   },
   
   articleSumm: {
@@ -15,11 +16,15 @@ var ArticleSchema = new Schema({
     required: true,
     unique:true
   },
+  saved:{
+    type: Boolean,
+    default:false
+  }
   
-  note: {
+  /*note: {
     type: Schema.Types.ObjectId,
     ref: "Note"
-  }
+  }*/
 });
 
 
